@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using UnityEditor.U2D;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public abstract class UnitController : MonoBehaviour {
+    [SerializeField] private GameObject pawnParent;
 
     private Animator unitAnimator;
-    [SerializeField] private GameObject pawnParent;
     public UnitData UnitBaseData { get; private set; }
     public bool HasPerformedAction { get; private set; }
     public bool IsDone { get; private set; }
@@ -14,14 +12,14 @@ public abstract class UnitController : MonoBehaviour {
     public UnitValues Values => values;
     protected UnitValues values;
 
-    protected UnitMovementComponent unitMovement;
-    protected UnitAttackModule attackModule;
-    protected Vector2Int gridPosition;
+    public Vector2Int LookDirection => lookDirection;
     protected Vector2Int lookDirection;
 
-    private ActionQueue queue;
+    protected UnitMovementModule movementModule;
+    protected UnitAttackModule attackModule;
+    protected Vector2Int gridPosition;
 
-    private bool didAttack;
+    private ActionQueue queue;
 
     private void OnEnable() {
         EventManager<BattleEvents, UnitController>.Subscribe(BattleEvents.UnitDeath, UnitDeath);
@@ -31,33 +29,30 @@ public abstract class UnitController : MonoBehaviour {
 
     private void OnDisable() {
         EventManager<BattleEvents, UnitController>.Unsubscribe(BattleEvents.UnitDeath, UnitDeath);
-        EventManager<BattleEvents, UnitController>.Unsubscribe(BattleEvents.UnitDeath, UnitHit);
-        EventManager<BattleEvents, UnitController>.Unsubscribe(BattleEvents.UnitDeath, UnitRevive);
+        EventManager<BattleEvents, UnitController>.Unsubscribe(BattleEvents.UnitHit, UnitHit);
+        EventManager<BattleEvents, UnitController>.Unsubscribe(BattleEvents.UnitRevive, UnitRevive);
     }
 
     private void Start() {
         unitAnimator = GetComponentInChildren<Animator>();
     }
 
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Card")) {
+            EventManager<BattleEvents>.Invoke(BattleEvents.SpawnAbilityCard);
+            Destroy(other.gameObject);
+        }
+    }
+
     public virtual void SetUp(UnitData data, Vector2Int pos) {
         UnitBaseData = Instantiate(data);
         GameObject pawn = Instantiate(data.PawnPrefab, pawnParent.transform);
-        
+
         values = new(UnitBaseData);
-        unitMovement = new();
+        movementModule = new();
         attackModule = new(UnitBaseData.Attack);
         gridPosition = pos;
-        GameObject card = Instantiate(data.UnitCard);
-        card.transform.localPosition = new Vector3(pos.x + pawn.transform.position.x, 0, pos.y + pawn.transform.position.z);
-        
-        CharacterCard cardScript = card.GetComponent<CharacterCard>();
-        cardScript.name = data.name;
-        cardScript.descriptionText.SetText(data.Description.ToString());
-        cardScript.defenseText.SetText(data.BaseStatBlock.Defence.ToString()); 
-        cardScript.attackText.SetText(data.BaseStatBlock.Attack.ToString());
-        cardScript.visuals.sprite = data.Icon;
-
-        queue = new(() => IsDone = ShouldEndTurn());
+        queue = new(() => IsDone = HasPerformedAction);
     }
 
     public virtual void OnEnter() {
@@ -71,7 +66,6 @@ public abstract class UnitController : MonoBehaviour {
 
     public virtual void OnExit() {
         HasPerformedAction = false;
-        didAttack = false;
         IsDone = false;
     }
 
@@ -83,10 +77,8 @@ public abstract class UnitController : MonoBehaviour {
                 EnqueueMovement(standingPos_optional);
                 EnqueueAttack(pickedTile, standingPos_optional);
             }
-
-            didAttack = true;
         }
-        else if (unitMovement.AccessableTiles.Contains(pickedTile))
+        else if (movementModule.AccessableTiles.Contains(pickedTile))
             EnqueueMovement(pickedTile);
     }
 
@@ -97,7 +89,7 @@ public abstract class UnitController : MonoBehaviour {
         }));
 
         Vector2Int lastPos = gridPosition;
-        foreach (var newPos in unitMovement.GetPath(targetPosition)) {
+        foreach (var newPos in movementModule.GetPath(targetPosition)) {
             Vector2Int lookDirection = GridStaticFunctions.GetVector2RotationFromDirection(GridStaticFunctions.CalcSquareWorldPos(newPos) - GridStaticFunctions.CalcSquareWorldPos(lastPos));
 
             queue.Enqueue(new ActionStack(
@@ -136,7 +128,8 @@ public abstract class UnitController : MonoBehaviour {
             if (!hit)
                 throw new System.Exception("Something went Very wrong with getting the units attackable tiles");
 
-            DamageManager.DealDamage(values, unit);
+            this.lookDirection = lookDirection;
+            DamageManager.DealDamage(this, unit);
         }));
         HasPerformedAction = true;
     }
@@ -155,9 +148,9 @@ public abstract class UnitController : MonoBehaviour {
     }
 
     public virtual void FindTiles() {
-        unitMovement.FindAccessibleTiles(gridPosition, values.currentStats.Speed);
+        movementModule.FindAccessibleTiles(gridPosition, values.currentStats.Speed);
 
-        List<Vector2Int> tiles = new(unitMovement.AccessableTiles) {
+        List<Vector2Int> tiles = new(movementModule.AccessableTiles) {
             gridPosition
         };
         attackModule.FindAttackableTiles(tiles, UnitStaticManager.GetEnemies(this));
@@ -167,10 +160,17 @@ public abstract class UnitController : MonoBehaviour {
         values.AddEffect(effect);
     }
 
-    private bool ShouldEndTurn() {
-        bool speedDown = values.currentStats.Speed < 1;
-        bool noAttacks = attackModule.AttackableTiles.Count < 1;
+    public void ChangeUnitPosition(Vector2Int newPosition) {
+        UnitStaticManager.SetUnitPosition(this, newPosition);
 
-        return (speedDown && noAttacks) || didAttack;
+        transform.position = GridStaticFunctions.CalcSquareWorldPos(newPosition);
+
+        gridPosition = newPosition;
+    }
+
+    public void ChangeUnitRotation(Vector2Int newRotation) {
+        lookDirection = newRotation;
+
+        transform.rotation = Quaternion.Euler(new Vector3(0, GridStaticFunctions.GetRotationFromVector2Direction(lookDirection), 0));
     }
 }

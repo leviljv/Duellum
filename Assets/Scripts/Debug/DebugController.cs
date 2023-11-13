@@ -4,19 +4,21 @@ using UnityEngine;
 
 public class DebugController : MonoBehaviour {
     private bool showConsole = false;
-    string input;
-    //public GUIStyle myStyle;
+    private string input;
 
+    public static DebugController Instance { get; private set; }
     public enum CommandType {
         ShakeCamera,
         ReviveAll,
-        KillAll
+        KillAll,
+        GiveCard
     }
 
     private Dictionary<string, CommandType> commandDictionary = new() {
         {"shakecam", CommandType.ShakeCamera },
         {"reviveall", CommandType.ReviveAll},
-        {"killall", CommandType.KillAll }
+        {"killall", CommandType.KillAll },
+        {"givecard", CommandType.GiveCard},
     };
 
     public void OnToggleDebug() {
@@ -25,10 +27,11 @@ public class DebugController : MonoBehaviour {
 
     private void Awake() {
         input = "";
+        Instance = this;
     }
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.F12)) 
+        if (Input.GetKeyDown(KeyCode.F12))
             OnToggleDebug();
     }
 
@@ -62,20 +65,33 @@ public class DebugController : MonoBehaviour {
                 switch (type) {
                     case CommandType.ShakeCamera:
                         EventManager<CameraEventType, float>.Invoke(CameraEventType.DO_CAMERA_SHAKE, 1);
-                        break;
+                    break;
+
                     case CommandType.ReviveAll:
-                        foreach(UnitController unit in UnitStaticManager.DeadUnitsInPlay) {
+                        foreach (UnitController unit in UnitStaticManager.DeadUnitsInPlay)
                             EventManager<BattleEvents, UnitController>.Invoke(BattleEvents.UnitRevive, unit);
-                        }
+
                         for (int i = UnitStaticManager.DeadUnitsInPlay.Count - 1; i >= 0; i--)
                             UnitStaticManager.ReviveUnit(UnitStaticManager.DeadUnitsInPlay[i]);
+                    break;
 
-                        break;
                     case CommandType.KillAll:
-                        for(int i = UnitStaticManager.LivingUnitsInPlay.Count - 1; i >= 0; i--) {
+                        for (int i = UnitStaticManager.LivingUnitsInPlay.Count - 1; i >= 0; i--)
                             UnitStaticManager.UnitDeath(UnitStaticManager.LivingUnitsInPlay[i]);
+                    break;
+
+                    case CommandType.GiveCard:
+                        if (inputParts.Length >= 3) {
+                            string cardName = inputParts[1];
+                            string[] parameterValues = inputParts.Skip(2).ToArray();
+
+                            EventManager<BattleEvents, string>.Invoke(BattleEvents.GiveCard, cardName);
                         }
-                        break;
+                        else {
+                            Debug.Log("GiveCard command requires at least one parameter: Card Name.");
+                        }
+                    break;
+
                     default:
                         Debug.Log("Unknown command: " + command);
                         break;
