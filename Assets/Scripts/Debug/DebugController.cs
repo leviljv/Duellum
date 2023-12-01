@@ -11,6 +11,8 @@ public class DebugController : MonoBehaviour {
         ShakeCamera,
         ReviveAll,
         KillAll,
+        KillEnemies,
+        KillHeroes,
         GiveCard
     }
 
@@ -18,6 +20,8 @@ public class DebugController : MonoBehaviour {
         {"shakecam", CommandType.ShakeCamera },
         {"reviveall", CommandType.ReviveAll},
         {"killall", CommandType.KillAll },
+        {"killenemies", CommandType.KillEnemies },
+        {"killheroes", CommandType.KillHeroes },
         {"givecard", CommandType.GiveCard},
     };
 
@@ -79,6 +83,16 @@ public class DebugController : MonoBehaviour {
                         for (int i = UnitStaticManager.LivingUnitsInPlay.Count - 1; i >= 0; i--)
                             UnitStaticManager.UnitDeath(UnitStaticManager.LivingUnitsInPlay[i]);
                     break;
+                    case CommandType.KillEnemies:
+                        for (int i = UnitStaticManager.EnemyUnitsInPlay.Count - 1; i >= 0; i--)
+                            UnitStaticManager.UnitDeath(UnitStaticManager.EnemyUnitsInPlay[i]);
+                    break;
+
+                    case CommandType.KillHeroes:
+                        for (int i = UnitStaticManager.PlayerUnitsInPlay.Count - 1; i >= 0; i--)
+                            UnitStaticManager.UnitDeath(UnitStaticManager.PlayerUnitsInPlay[i]);
+                    break;
+
 
                     case CommandType.GiveCard:
                         if (inputParts.Length >= 3) {

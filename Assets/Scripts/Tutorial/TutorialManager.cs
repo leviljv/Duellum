@@ -33,8 +33,9 @@ public class TutorialManager : MonoBehaviour {
     }
 
     public void Btn_NextVideo() {
+        EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ui_Click");
         if (currentVideoIndex + 1 >= videoClips.Count) {
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene("SampleScene");
             return;
         }
 
@@ -45,6 +46,7 @@ public class TutorialManager : MonoBehaviour {
     }
 
     public void Btn_PreviousVideo() {
+        EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ui_Click");
         if (currentVideoIndex > 0)
             currentVideoIndex -= 1;
 
