@@ -3,10 +3,12 @@ using System.Linq;
 using UnityEngine;
 
 public class DebugController : MonoBehaviour {
+
     private bool showConsole = false;
     private string input;
 
     public static DebugController Instance { get; private set; }
+
     public enum CommandType {
         ShakeCamera,
         ReviveAll,

@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioHandler : MonoBehaviour
 {
     [SerializeField] AudioManager audioManager;
+
     private void OnEnable() {
         EventManager<AudioEvents, string>.Subscribe(AudioEvents.PlayAudio, audioManager.PlayAudio);
     }
