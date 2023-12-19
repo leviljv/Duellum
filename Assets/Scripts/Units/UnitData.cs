@@ -34,6 +34,11 @@ public class UnitData : ScriptableObject {
 
     [Header("Properties")]
     public List<UnitAttribute> Properties;
+
+    [Header("Unit Specific Audio")]
+    public string walkingSounds;
+    public string attackingSounds;
+    public string hurtSounds;
 }
 
 [Serializable]
