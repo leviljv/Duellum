@@ -16,7 +16,8 @@ MonoBehaviour:
   Description: A tank. Backstab him!
   Rank: 4
   Catagory: 3
-  Icon: {fileID: 21300000, guid: df5913b52f4057249893f078b0191cc0, type: 3}
+  Type: 0
+  Icon: {fileID: 21300000, guid: c8d1f0ee5ef2d79488e07919ab0b0436, type: 3}
   Animations: {fileID: 0}
   PawnPrefab: {fileID: 8753619234690991416, guid: e812c04705f47d645beb13e90ec0ff93,
     type: 3}
@@ -31,3 +32,6 @@ MonoBehaviour:
     Attack: 2
   Attack: {fileID: 11400000, guid: 5a50c07394189034587fc5a610a0962b, type: 2}
   Properties: []
+  walkingSounds: ph_footsteps
+  attackingSounds: ph_bluntHit
+  hurtSounds: ph_maleHurt

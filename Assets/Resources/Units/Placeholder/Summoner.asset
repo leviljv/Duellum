@@ -16,7 +16,8 @@ MonoBehaviour:
   Description: Can summon ghouls, at a maximum of 2.
   Rank: 1
   Catagory: 0
-  Icon: {fileID: 21300000, guid: 273766fd3d062684c9835a2e4340c04c, type: 3}
+  Type: 0
+  Icon: {fileID: 21300000, guid: c8d1f0ee5ef2d79488e07919ab0b0436, type: 3}
   Animations: {fileID: 0}
   PawnPrefab: {fileID: 1721587517403622, guid: c6295e3ac14276d44a00c6e1c7860934, type: 3}
   UnitCard: {fileID: 2632573487402955053, guid: c1cddacee425f4544a2dbd73db5860ba,
@@ -30,3 +31,6 @@ MonoBehaviour:
     Attack: 1
   Attack: {fileID: 11400000, guid: 5a50c07394189034587fc5a610a0962b, type: 2}
   Properties: []
+  walkingSounds: ph_footsteps
+  attackingSounds: ph_Summon
+  hurtSounds: ph_maleHurt
