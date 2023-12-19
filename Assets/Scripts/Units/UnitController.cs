@@ -21,6 +21,10 @@ public abstract class UnitController : MonoBehaviour {
 
     private ActionQueue queue;
 
+    private string walkingSounds;
+    private string attackingSounds;
+    private string hurtSounds;
+
     private void OnEnable() {
         EventManager<BattleEvents, UnitController>.Subscribe(BattleEvents.UnitDeath, UnitDeath);
         EventManager<BattleEvents, UnitController>.Subscribe(BattleEvents.UnitHit, UnitHit);
@@ -40,6 +44,9 @@ public abstract class UnitController : MonoBehaviour {
     public virtual void SetUp(UnitData data, Vector2Int pos) {
         UnitBaseData = Instantiate(data);
         GameObject pawn = Instantiate(data.PawnPrefab, pawnParent.transform);
+        walkingSounds = data.walkingSounds;
+        attackingSounds = data.attackingSounds;
+        hurtSounds = data.hurtSounds;
 
         values = new(UnitBaseData);
         movementModule = new();
@@ -78,7 +85,8 @@ public abstract class UnitController : MonoBehaviour {
     private void EnqueueMovement(Vector2Int targetPosition) {
         queue.Enqueue(new DoMethodAction(() => {
             unitAnimator.SetBool("Walking", true);
-            //UnitAudio.PlayLoopedAudio("Walking", true);
+            EventManager<AudioEvents, EventMessage<string, bool>>.Invoke(AudioEvents.PlayLoopedAudio, new(walkingSounds, true));
+
         }));
 
         Vector2Int lastPos = gridPosition;
@@ -109,7 +117,7 @@ public abstract class UnitController : MonoBehaviour {
 
         queue.Enqueue(new DoMethodAction(() => {
             unitAnimator.SetBool("Walking", false);
-
+            EventManager<AudioEvents, EventMessage<string, bool>>.Invoke(AudioEvents.PlayLoopedAudio, new(walkingSounds, false));
             FindTiles();
             GridStaticFunctions.ResetTileColors();
         }));
@@ -122,6 +130,7 @@ public abstract class UnitController : MonoBehaviour {
 
         queue.Enqueue(new RotateAction(gameObject, new Vector3(0, GridStaticFunctions.GetRotationFromVector2Direction(lookDirection), 0), 360f, .01f));
         queue.Enqueue(new DoMethodAction(() => unitAnimator.SetTrigger("Attacking")));
+        queue.Enqueue(new DoMethodAction(() => EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, attackingSounds)));
         queue.Enqueue(new WaitAction(.2f));
         queue.Enqueue(new DoMethodAction(() => {
             bool hit = UnitStaticManager.TryGetUnitFromGridPos(targetPosition, out var unit);
@@ -149,11 +158,21 @@ public abstract class UnitController : MonoBehaviour {
 
     private void UnitHit(UnitController unit) {
         unit.unitAnimator.SetTrigger("GettingHit");
+        
         EventManager<CameraEventType, float>.Invoke(CameraEventType.DO_CAMERA_SHAKE, 0.1f);
     }
-
+    
     private void UnitDeath(UnitController unit) {
+        EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, hurtSounds);
         unit.unitAnimator.SetTrigger("Dying");
+        EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_bodyFall");
+
+        if (!UnitStaticManager.EnemyUnitsInPlay.Contains(unit)) {
+            return;
+        }
+        else {
+            EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_successAttack");
+        }
     }
 
     private void UnitRevive(UnitController unit) {

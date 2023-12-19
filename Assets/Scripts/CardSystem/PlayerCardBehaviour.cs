@@ -7,6 +7,7 @@ public class PlayerCardBehaviour : BaseCardBehaviour,
         if (grabbed || !CanInvoke)
             return;
 
+        EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ui_Click");
         EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_shuffleCards");
         OnHoverEnter.Invoke(this, () => {
             EventManager<UIEvents, CursorType>.Invoke(UIEvents.UpdateCursor, CursorType.Hover);

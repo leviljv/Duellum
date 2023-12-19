@@ -12,9 +12,12 @@ public static class DamageManager {
                     false,
                     1000,
                     100));
-
+                
                 EventManager<BattleEvents, UnitController>.Invoke(BattleEvents.UnitDeath, unit);
                 UnitStaticManager.UnitDeath(unit);
+            }
+            else if(UnitStaticManager.PlayerUnitsInPlay.Contains(attackingUnit)){
+                EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_failureAttack");
             }
         }
     }

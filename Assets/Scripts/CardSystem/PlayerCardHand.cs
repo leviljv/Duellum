@@ -154,7 +154,7 @@ public class PlayerCardHand : CardHand {
             List<Vector2Int> validTiles = GridStaticSelectors.GetPositions(ability.availabletilesSelector, MouseToWorldView.HoverTileGridPos);
             if (validTiles.Contains(MouseToWorldView.HoverTileGridPos)) {
                 List<Vector2Int> affectedTiles = GridStaticSelectors.GetPositions(ability.areaOfEffectSelector, MouseToWorldView.HoverTileGridPos);
-
+                EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_abilityCard");
                 GridStaticFunctions.ResetTileColors();
                 AbilityManager.PerformAbility(ability, affectedTiles.ToArray());
                 RemoveCard(card.Index);
