@@ -27,9 +27,9 @@ MonoBehaviour:
   tileCover: 0
   TileCoverage: 1
   BaseStatBlock:
-    Defence: 2
+    Defence: 3
     Speed: 3
-    Attack: 3
+    Attack: 2
   Attack: {fileID: 11400000, guid: 5a50c07394189034587fc5a610a0962b, type: 2}
   Properties: []
   walkingSounds: ph_footsteps
