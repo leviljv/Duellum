@@ -53,15 +53,12 @@ public static class UnitStaticManager {
 
             if (PlayerUnitsInPlay.Count < 1)
                 EventManager<BattleEvents>.Invoke(BattleEvents.BattleEnd);
-                EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_Lost");
         }
         else if (EnemyUnitsInPlay.Contains(unit)) {
             EnemyUnitsInPlay.Remove(unit);
 
             if (EnemyUnitsInPlay.Count < 1)
                 EventManager<BattleEvents>.Invoke(BattleEvents.BattleEnd);
-                //will move and implement properly 
-                EventManager<AudioEvents, string>.Invoke(AudioEvents.PlayAudio, "ph_Won");
         }
 
         EventManager<BattleEvents, UnitController>.Invoke(BattleEvents.UnitDeath, unit);

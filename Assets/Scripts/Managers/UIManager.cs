@@ -8,8 +8,8 @@ public class UIManager : MonoBehaviour {
     [SerializeField] private GameObject infoPanel;
     [SerializeField] private GameObject pauseMenu;
 
-    private TextMeshProUGUI panelTitleText;
-    private TextMeshProUGUI panelContentText;
+    [SerializeField] private TextMeshProUGUI panelTitleText;
+    [SerializeField] private TextMeshProUGUI panelContentText;
 
     private void Start() {
         infoPanel.SetActive(false);
